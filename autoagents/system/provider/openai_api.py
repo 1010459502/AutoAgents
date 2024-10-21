@@ -172,10 +172,11 @@ class OpenAIGPTAPI(BaseGPTAPI, RateLimiter):
         # iterate through the stream of events
         async for chunk in response:
             collected_chunks.append(chunk)  # save the event response
-            chunk_message = chunk['choices'][0]['delta']  # extract the message
-            collected_messages.append(chunk_message)  # save the message
-            if "content" in chunk_message:
-                print(chunk_message["content"], end="")
+            if 'choices' in chunk and chunk['choices']:
+                chunk_message = chunk['choices'][0].get('delta', {})
+                collected_messages.append(chunk_message)
+                if "content" in chunk_message:
+                    print(chunk_message["content"], end="")
 
         full_reply_content = ''.join([m.get('content', '') for m in collected_messages])
         usage = self._calc_usage(messages, full_reply_content)
